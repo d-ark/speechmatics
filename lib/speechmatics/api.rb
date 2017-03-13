@@ -36,9 +36,11 @@ module Speechmatics
         raise ArgumentError, "whoops, that isn't a valid http method: #{method}"
       end
 
+      puts "Memory usage before set connection: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       conn = connection((params[:options] || {}).merge(current_options))
       request_path = (conn.path_prefix + '/' + path).gsub(/\/+/, '/')
 
+      puts "Memory usage before send: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       response = conn.send(method) do |request|
         case method.to_sym
         when :get, :delete
@@ -48,6 +50,8 @@ module Speechmatics
           request.body = params[:data]
         end
       end
+      puts "Memory usage after request: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
+
       Speechmatics::Response.new(response, {api: self, method: method, path: path, params: params})
     end
 
@@ -74,7 +78,9 @@ module Speechmatics
     end
 
     def create(params={})
+      puts "Memory usage before merge options: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       self.current_options = current_options.merge(args_to_options(params))
+      puts "Memory usage before request: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       request(:post, base_path, {data: params})
     end
 

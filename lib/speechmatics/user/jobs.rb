@@ -7,9 +7,13 @@ module Speechmatics
     include Configuration
 
     def create(params={})
+      puts "Memory usage before attach: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       attach_audio(params)
+      puts "Memory usage after attach: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       attach_text(params) if params[:text_file]
+      puts "Memory usage before set_mode: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       set_mode(params)
+      puts "Memory usage after set_mode: #{`ps ax -o pid,rss | grep -E "^[[:space:]]*#{$$}"`.strip.split.map(&:to_i)}"
       super
     end
 
@@ -20,7 +24,7 @@ module Speechmatics
 
     def alignment(params={})
       self.current_options = current_options.merge(args_to_options(params))
-      request(:get, "#{base_path}/alignment", {:options => {:allow_text => true}})
+      request(:get, "#{base_path}/alignment", {:options => {'allow_text' => true}})
     end
 
     def set_mode(params={})
